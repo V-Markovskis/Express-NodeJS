@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "ts-node ./src/index.ts",
-    "start:nodemon": "./node_modules/nodemon/bin/nodemon.js",
+    "start:nodemon": "nodemon --exec ts-node ./src/index.ts",
     "seed": "node seed-data.js"
   },
   "devDependencies": {
@@ -13,6 +13,7 @@
     "typescript": "^5.3.2"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "mysql2": "^3.6.5"
   }
 }

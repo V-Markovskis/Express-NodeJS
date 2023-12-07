@@ -1,11 +1,15 @@
 import express from 'express';
+const cors = require('cors');
 import { connection } from "./db";
 const app = express();
 const port = 3001;
 
+app.use(cors({
+  origin: '*'
+}));
 
 app.get('/', async (req, res) => {
-  res.json("hi");
+  res.json({message: "Hello form server"});
 });
 
 app.get('/users', async (req, res) => {
