@@ -11,17 +11,14 @@ app.use(cors({
   origin: '*'
 }));
 
-type Movies = {
-  image: string;
-  nickname: string;
-  movie: string;
-  review: string;
-  evaluation: number;
-}
+// type Movies = {
+//   image: string;
+//   nickname: string;
+//   movie: string;
+//   review: string;
+//   evaluation: number;
+// }
 
-// app.get('/', async (req, res) => {
-//   res.json({message: "Hello form server"});
-// });
 
 app.get('/movies', async (req, res) => {
   // Execute the query to get all movies
@@ -40,7 +37,7 @@ app.get('/movies', async (req, res) => {
 app.post('/movies', async (req, res) => {
   const { image, nickname, movie, review, evaluation } = req.body
 
-  console.log(req.body)
+  console.log('req.body ========', req.body)
 
   if( !nickname || !movie || !review || !evaluation) {
     res.status(400).send('Incorrect data')
@@ -55,11 +52,28 @@ app.post('/movies', async (req, res) => {
       res.status(500).json({ error: 'Internal Server Error'});
       return;
     }
-    console.log('results', results)
-    // Send the users as a JSON response
-    // res.json({movies: results });
+    console.log('results ===', results)
     res.json(results);
   });
+})
+
+app.delete('/movies/:id', async (req, res) => {
+  const movieId = parseInt(req.params.id);
+
+  if(!movieId) {
+    res.status(400).send('Missing id')
+  }
+
+  connection.query(`
+    DELETE FROM movies WHERE id = ?`, movieId, (error, results) => {
+    if (error) {
+      res.status(500).json({ error: 'Internal Server Error'})
+      return;
+    }
+    console.log('delete result = ', results)
+    res.json(results);
+  })
+
 })
 
 app.listen(port, () => {
