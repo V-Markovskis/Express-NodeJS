@@ -39,10 +39,13 @@ connection.connect((err) => {
 
       // Define the SQL query to create a table if not exists
       const createTableQuery = `
-        CREATE TABLE IF NOT EXISTS users (
+        CREATE TABLE IF NOT EXISTS movies (
           id INT AUTO_INCREMENT PRIMARY KEY,
-          name VARCHAR(255) NOT NULL,
-          email VARCHAR(255) NOT NULL
+          image VARCHAR(255) NOT NULL,
+          nickname VARCHAR(255) NOT NULL,
+          movie VARCHAR(255) NOT NULL,
+          review VARCHAR(255) NOT NULL,
+          evaluation INT(255) NOT NULL
         )
       `;
 
@@ -54,27 +57,27 @@ connection.connect((err) => {
           return;
         }
 
-        console.log('Table "users" created or already exists');
+        console.log('Table "movies" created or already exists');
 
         // Define the SQL query to insert data into the table
-        const insertDataQuery = `
-          INSERT INTO users (name, email) VALUES
-            ('John Doe', 'john@example.com'),
-            ('Jane Doe', 'jane@example.com'),
-            ('Bob Smith', 'bob@example.com')
-        `;
-
-        // Execute the query to insert data
-        connection.query(insertDataQuery, (insertDataError, insertDataResults) => {
-          if (insertDataError) {
-            console.error('Error inserting data:', insertDataError);
-          } else {
-            console.log('Data inserted or already exists');
-          }
-
-          // Close the connection
-          connection.end();
-        });
+        // const insertDataQuery = `
+        //   INSERT INTO movies (name, email) VALUES
+        //     ('John Doe', 'john@example.com'),
+        //     ('Jane Doe', 'jane@example.com'),
+        //     ('Bob Smith', 'bob@example.com')
+        // `;
+        //
+        // // Execute the query to insert data
+        // connection.query(insertDataQuery, (insertDataError, insertDataResults) => {
+        //   if (insertDataError) {
+        //     console.error('Error inserting data:', insertDataError);
+        //   } else {
+        //     console.log('Data inserted or already exists');
+        //   }
+        //
+        //   // Close the connection
+        //   connection.end();
+        // });
       });
     });
   });
