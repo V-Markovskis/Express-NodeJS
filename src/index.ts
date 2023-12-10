@@ -11,15 +11,6 @@ app.use(cors({
   origin: '*'
 }));
 
-// type Movies = {
-//   image: string;
-//   nickname: string;
-//   movie: string;
-//   review: string;
-//   evaluation: number;
-// }
-
-
 app.get('/movies', async (req, res) => {
   // Execute the query to get all movies
   connection.query('SELECT * FROM movies', (error, results) => {
@@ -65,15 +56,36 @@ app.delete('/movies/:id', async (req, res) => {
   }
 
   connection.query(`
-    DELETE FROM movies WHERE id = ?`, movieId, (error, results) => {
+    DELETE FROM movies WHERE id = ${movieId}`, (error, results) => {
     if (error) {
       res.status(500).json({ error: 'Internal Server Error'})
       return;
     }
-    console.log('delete result = ', results)
+    console.log('delete result = ', results);
     res.json(results);
   })
 
+})
+
+app.put('/movies/:id', async (req, res) => {
+  const movieId = parseInt(req.params.id);
+  const { image, nickname, movie, review, evaluation } = req.body
+
+  if(!movieId || !movie) {
+    res.status(400).send('Incorrect data');
+  }
+
+  connection.query(`
+    UPDATE movies
+    SET image = '${image}', nickname = '${nickname}', movie = '${movie}', review = '${review}', evaluation = '${evaluation}'
+    WHERE id = '${movieId}';`, (error, results) => {
+    if (error) {
+      res.status(500).json({ error: 'Internal Server Error'} )
+      return;
+    }
+    console.log('updated movie = ', results);
+    res.json(results);
+  })
 })
 
 app.listen(port, () => {
