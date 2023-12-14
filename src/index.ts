@@ -1,8 +1,10 @@
 import express from 'express';
 const cors = require('cors');
 import { connection } from "./db";
+import { z } from 'zod'
 const app = express();
 const port = 3001;
+
 
 //https://stackoverflow.com/questions/62455716/typeerror-cannot-destructure-property-userid-of-req-body-as-it-is-undefined
 app.use(express.json());
@@ -10,6 +12,16 @@ app.use(express.json());
 app.use(cors({
   origin: '*'
 }));
+
+const incomingDataValidation = z.object({
+  image: z.string(),
+  nickname: z.string(),
+  movie: z.string(),
+  review: z.string(),
+  evaluation: z.string()
+})
+
+const validateId = z.number();
 
 app.get('/movies', async (req, res) => {
   // Execute the query to get all movies
@@ -27,10 +39,11 @@ app.get('/movies', async (req, res) => {
 
 app.post('/movies', async (req, res) => {
   const { image, nickname, movie, review, evaluation } = req.body
+  incomingDataValidation.parse(req.body)
 
   console.log('req.body ========', req.body)
 
-  if( !nickname || !movie || !review || !evaluation) {
+  if(!incomingDataValidation) {
     res.status(400).send('Incorrect data')
     return;
   }
@@ -50,8 +63,9 @@ app.post('/movies', async (req, res) => {
 
 app.delete('/movies/:id', async (req, res) => {
   const movieId = parseInt(req.params.id);
+  validateId.parse(movieId)
 
-  if(!movieId) {
+  if(!validateId) {
     res.status(400).send('Missing id')
   }
 
@@ -70,8 +84,10 @@ app.delete('/movies/:id', async (req, res) => {
 app.put('/movies/:id', async (req, res) => {
   const movieId = parseInt(req.params.id);
   const { image, nickname, movie, review, evaluation } = req.body
+  incomingDataValidation.parse(req.body)
+  validateId.parse(movieId)
 
-  if(!movieId || !movie) {
+  if(!incomingDataValidation || !validateId) {
     res.status(400).send('Incorrect data');
   }
 
