@@ -2,6 +2,7 @@ import express from 'express';
 const cors = require('cors');
 import { connection } from "./db";
 import { z } from 'zod'
+import {fromZodError, isValidationErrorLike} from "zod-validation-error";
 const app = express();
 const port = 3001;
 
@@ -21,6 +22,8 @@ const incomingDataValidation = z.object({
   evaluation: z.string()
 })
 
+type incomingData = z.infer<typeof incomingDataValidation>
+
 const validateId = z.number();
 
 app.get('/movies', async (req, res) => {
@@ -31,53 +34,55 @@ app.get('/movies', async (req, res) => {
       return;
     }
 
-    // Send the movies as a JSON response
-    // res.json({ movies: results });
     res.json(results);
   });
 });
 
 app.post('/movies', async (req, res) => {
-  const { image, nickname, movie, review, evaluation } = req.body
-  incomingDataValidation.parse(req.body)
+  try {
+    incomingDataValidation.parse(req.body)
+    const { image, nickname, movie, review, evaluation } = req.body
 
-  console.log('req.body ========', req.body)
-
-  if(!incomingDataValidation) {
-    res.status(400).send('Incorrect data')
-    return;
-  }
-
-  connection.query(`
+    connection.query(`
     INSERT INTO movies (image, nickname, movie, review, evaluation)
     VALUES ('${image}','${nickname}', '${movie}', '${review}', '${evaluation}');
-  `, (error, results) => {
-    if(error) {
-      res.status(500).json({ error: 'Internal Server Error'});
-      return;
+    `, (error, results) => {
+      if(error) {
+        res.status(500).json({ error: 'Internal Server Error'});
+        return;
+      }
+
+      res.json(results);
+    });
+  } catch (error) {
+    //https://github.com/causaly/zod-validation-error
+    if (isValidationErrorLike(error)) {
+      return res.status(400).send('Incorrect data'); // Bad Data (this is a client error)
     }
-    console.log('results ===', results)
-    res.json(results);
-  });
+    return res.status(500).json({ error: 'Internal Server Error'}); // Server Error
+  }
 })
 
 app.delete('/movies/:id', async (req, res) => {
-  const movieId = parseInt(req.params.id);
-  validateId.parse(movieId)
+  try {
+    const movieId = parseInt(req.params.id);
+    validateId.parse(movieId);
 
-  if(!validateId) {
-    res.status(400).send('Missing id')
-  }
-
-  connection.query(`
+    connection.query(`
     DELETE FROM movies WHERE id = ${movieId}`, (error, results) => {
-    if (error) {
-      res.status(500).json({ error: 'Internal Server Error'})
-      return;
+      if (error) {
+        res.status(500).json({ error: 'Internal Server Error'})
+        return;
+      }
+      console.log('delete result = ', results);
+      res.json(results);
+    })
+  } catch (error) {
+    if (isValidationErrorLike(error)) {
+      return res.status(400).send('Missing id'); // Bad Data (this is a client error)
     }
-    console.log('delete result = ', results);
-    res.json(results);
-  })
+    return res.status(500).json({ error: 'Internal Server Error'}); // Server Error
+  }
 
 })
 
